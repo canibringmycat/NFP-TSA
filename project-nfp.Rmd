@@ -20,15 +20,71 @@ library(astsa)
 includeSourceDocuments()
 ```
 
-### NFP
+### NFP EDA
+We aim to explore two versions of NFP data: PAYEMS and PAYNSA. PAYEMS is a dataset with seasonally adjusted values, and PAYNSA is a dataset without seasonal adjustments. The data is recorded in thousands of persons (jobs created). The datasets contain monthly NFP report values from January 1939 to March 2018.  
+<br>
 
-```{r}
-# insert code here
+
+#### Seasonally Adjusted (PAYEMS)
+```{r out.width = "70%", dpi = 400}
+PAYEMS <- read.csv(file = "PAYEMS.csv", header = TRUE, sep = ",")
+nfp_sa_ts <- ts(PAYEMS[2])
+plot.ts(nfp_sa_ts, main = "Seasonally Adjusted Total Nonfarm Payrolls", xlab = "Months (since January 1939)", ylab = "Number of Payrolls")
 ```
 
 
 
+#### Not Seasonally Adjusted (PAYNSA)
+```{r out.width = "70%", dpi = 400}
+PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
+nfp_nsa_ts <- ts(PAYNSA[2])
+plot.ts(nfp_nsa_ts, main = "Total Nonfarm Payrolls (Not Seasonally Adjusted)", xlab = "Months (since January 1939)", ylab = "Number of Payrolls")
+```
 
 
+#### Narrowing Our Scope
+Throughout the 80 years represented in these datasets, various events have occurred that significantly changed the conditions of the economy. For this reason, we will limit our analysis to the years that followed the financial crisis of 2007/2008. By narrowing our scope to 2010-2018, we aim to provide a more telling analysis of the trends associated with the post-recession economic recovery.
+
+#### Seasonally Adjusted (PAYEMS) 2009-2018
+```{r out.width = "70%", dpi = 400}
+nfp_sa_ts_2009_2018 <- ts(PAYEMS[842:952, ][2])
+plot.ts(nfp_sa_ts_2009_2018, main = "Seasonally Adjusted Total Nonfarm Payrolls, 2009-2018", xlab = "Months (since January 2009)", ylab = "Number of Payrolls")
+```
+
+#### Not Seasonally Adjusted (PAYNSA) 2008-2018
+```{r out.width = "70%", dpi = 400}
+nfp_nsa_ts_2009_2018 <- ts(PAYNSA[842:952, ][2])
+plot.ts(nfp_nsa_ts_2009_2018, main = "Total Nonfarm Payrolls (Not Seasonally Adjusted), 2009-2018", xlab = "Months (since January 2009)", ylab = "Number of Payrolls")
+```
+
+
+### Change in Payrolls
+First order differencing of SA and NSA data
+
+#### SA Differences 2009-2018
+```{r out.width = "70%", dpi = 400}
+SA_diff <- diff(nfp_sa_ts_2009_2018, lag = 1, differences = 1)
+plot.ts(SA_diff, main = "SA Differences, 2009-2018", xlab = "Months (since January 2009)", ylab = "Number of Payrolls")
+```
+
+Taking the first difference seems to have detrended the original time series.
+
+```{r out.width = "70%", dpi = 400}
+hist(as.numeric(unlist(SA_diff)), breaks=15, main = "Histogram of SA Payroll changes", xlab = "Number of Payrolls")
+```
+
+Plotting this histogram indicates that the change in total seasonally adjusted payrolls may follow a left-skewed distribution, characterized by the long left tail above. 
+
+
+#### NSA Differences 2008-2018
+```{r out.width = "70%", dpi = 400}
+NSA_diff <- diff(nfp_nsa_ts_2009_2018, lag = 1, differences = 1)
+plot.ts(NSA_diff, main = "NSA Differences, 2009-2018", xlab = "Months (since January 2009)", ylab = "Number of Payrolls")
+```
+```{r out.width = "70%", dpi = 400}
+hist(as.numeric(unlist(NSA_diff)), breaks=15,  main = "Histogram of NSA Payroll changes", xlab = "Number of Payrolls")
+```
+
+Similarly, plotting this histogram indicates that the change in total non-seasonally adjusted payrolls may also follow a left-skewed distribution, characterized by a long left tail. 
 
 
