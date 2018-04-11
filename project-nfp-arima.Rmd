@@ -1,5 +1,5 @@
 ---
-title: "Project NFP"
+title: "Project NFP - ARIMA Modeling"
 author: "Sam Choi, Eric Xu"
 output:
   pdf_document: default
@@ -64,8 +64,8 @@ It appears that after seasonal differencing with seasonal period of 12 months th
 
 
 ```{r plot_acf_nsa}
-acf(centered_NSA_diff, main = "ACF Plot of NSA Differences 2010-2018")
-acf(centered_NSA_sdiff, main = "ACF Plot of NSA Seasonal Differences 2010-2018")
+# acf(centered_NSA_diff, main = "ACF Plot of NSA Differences 2010-2018")
+# acf(centered_NSA_sdiff, main = "ACF Plot of NSA Seasonal Differences 2010-2018")
 acf(NSA_sdiff2, main = "ACF Plot of NSA Seasonal Diffs Differenced Again")
 ```
 
@@ -73,14 +73,15 @@ The ACF does not appear to be significant at any lag.
 
 
 ```{r plot_pacf_nsa}
-pacf(centered_NSA_diff, main = "PACF Plot of NSA Differences 2010-2018")
-pacf(centered_NSA_sdiff, main = "PACF Plot of NSA Seasonal Differences 2010-2018")
+# pacf(centered_NSA_diff, main = "PACF Plot of NSA Differences 2010-2018")
+# pacf(centered_NSA_sdiff, main = "PACF Plot of NSA Seasonal Differences 2010-2018")
 pacf(NSA_sdiff2, main = "PACF Plot of NSA Seasonal Diffs Differenced Again")
 ```
 
 The PACF also does not appear to be significant at any lag.
 
 The insignificant ACF and PACF for all lag values further supports the notion that our transformed time series is very close to white noise.
+
 
 ### Parameter Estimation and Model Diagnostics
 
