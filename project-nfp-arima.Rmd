@@ -1,0 +1,87 @@
+---
+title: "Project NFP"
+author: "Sam Choi, Eric Xu"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(astsa)
+```
+
+## ARIMA
+
+We will use the Box-Jenkins method to build an ARIMA model for the seasonally adjusted NFP data transformed using first order differencing.
+
+### Model identification
+
+```{r plot_ts_sa}
+PAYEMS <- read.csv(file = "PAYEMS.csv", header = TRUE, sep = ",")
+nfp_sa_ts_2010_2018 <- ts(PAYEMS[853:951, ][2])
+SA_diff <- diff(nfp_sa_ts_2010_2018, lag = 1, differences = 1)
+
+SA_mean <- mean(SA_diff, na.rm = TRUE)
+centered_SA_diff <- SA_diff - SA_mean
+plot.ts(centered_SA_diff, main = "Centered SA Diffs, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
+```
+
+The time series appears stationary with a mean of approximately 188. No apparent trends.
+
+```{r plot_acf}
+acf(centered_SA_diff, main = "ACF Plot of SA Differences 2010-2018")
+```
+
+The ACF is always insignificant.
+
+```{r plot_pacf}
+pacf(centered_SA_diff, main = "PACF Plot of SA Differences 2010-2018")
+```
+
+```{r plot_ts_nsa}
+PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
+nfp_nsa_ts <- ts(PAYNSA[853:951,][2])
+NSA_diff <- diff(nfp_nsa_ts, lag = 1, differences = 1)
+
+NSA_mean <- mean(NSA_diff, na.rm = TRUE)
+centered_NSA_diff <- NSA_diff - NSA_mean
+plot.ts(centered_NSA_diff, main = "Centered NSA Diffs, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
+
+NSA_sdiff <- diff(nfp_nsa_ts, lag = 1, differences = 1)
+NSA_smean <- mean(NSA_sdiff)
+centered_NSA_sdiff <- NSA_sdiff - NSA_smean
+plot.ts(centered_NSA_sdiff)
+
+NSA_sdiff2 <- diff(NSA_sdiff, lag = 12, differences = 1)
+plot.ts(NSA_sdiff2)
+```
+
+
+
+```{r plot_acf_nsa}
+acf(centered_NSA_diff, main = "ACF Plot of SA Differences 2010-2018")
+acf(centered_NSA_sdiff, main = "ACF Plot of SA Differences 2010-2018")
+acf(NSA_sdiff2)
+```
+
+The ACF is always insignificant.
+
+```{r plot_pacf_nsa}
+pacf(centered_NSA_diff, main = "PACF Plot of SA Differences 2010-2018")
+pacf(centered_NSA_sdiff, main = "PACF Plot of SA Differences 2010-2018")
+pacf(NSA_sdiff2)
+```
+
+Appears to be ARMA(1, 0)
+
+### Parameter Estimation and Model Diagnostics
+
+```{r}
+sarima(centered_NSA_diff, p = 1, d = 0, q = 0, D = 1, S = 12)
+sarima(NSA_sdiff2, p = 0, d = 0, q = 1)
+```
+
+### Model Selection
+
+
+
