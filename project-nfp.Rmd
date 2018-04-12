@@ -46,13 +46,13 @@ Throughout the 80 years represented in these datasets, various events have occur
 
 #### Seasonally Adjusted (PAYEMS) 2010-2018
 ```{r out.width = "70%", dpi = 400}
-nfp_sa_ts_2010_2018 <- ts(PAYEMS[854:952, ][2])
+nfp_sa_ts_2010_2018 <- ts(PAYEMS[853:951, ][2])
 plot.ts(nfp_sa_ts_2010_2018, main = "Total Nonfarm Payrolls (SA), 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
 ```
 
 #### Not Seasonally Adjusted (PAYNSA) 2010-2018
 ```{r out.width = "70%", dpi = 400}
-nfp_nsa_ts_2010_2018 <- ts(PAYNSA[854:952, ][2])
+nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
 plot.ts(nfp_nsa_ts_2010_2018, main = "Total Nonfarm Payrolls (NSA), 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
 ```
 
@@ -85,5 +85,19 @@ hist(as.numeric(unlist(NSA_diff)), breaks=15,  main = "Histogram of NSA Payroll 
 ```
 
 Similarly, plotting this histogram indicates that the change in total non-seasonally adjusted payrolls may also follow a left-skewed distribution, characterized by a long left tail. 
+
+
+
+#### SA Differences 2010-2018
+Next we mean-cetner the SA_diff time series:  
+
+```{r out.width = "70%", dpi = 400}
+SA_mean <- mean(SA_diff, na.rm = TRUE)
+SA_mean
+centered_SA_diff <- SA_diff - SA_mean
+plot.ts(centered_SA_diff, main = "Centered SA Diffs, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
+```
+
+
 
 
