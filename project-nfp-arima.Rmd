@@ -1,0 +1,98 @@
+---
+title: "Project NFP - ARIMA Modeling"
+author: "Sam Choi, Eric Xu"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(astsa)
+setwd("~/Dropbox/Berkeley/stat153/NFP-TSA/")
+```
+
+## ARIMA
+
+We will use the Box-Jenkins method to build an ARIMA model for the seasonally adjusted and non-seasonally adjusted NFP data.
+
+### Model identification for SA data
+
+```{r plot_ts_sa}
+PAYEMS <- read.csv(file = "PAYEMS.csv", header = TRUE, sep = ",")
+nfp_sa_ts_2010_2018 <- ts(PAYEMS[853:951, ][2])
+SA_diff <- diff(nfp_sa_ts_2010_2018, lag = 1, differences = 1)
+
+SA_mean <- mean(SA_diff, na.rm = TRUE)
+centered_SA_diff <- SA_diff - SA_mean
+plot.ts(centered_SA_diff, main = "Centered SA Diffs, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
+```
+
+After differencing and mean centering, the time series appears stationary with a mean of approximately 188. There appear to be no trends.
+
+```{r plot_acf}
+acf(centered_SA_diff, main = "ACF Plot of SA Differences 2010-2018")
+```
+
+The ACF is always insignificant.
+
+```{r plot_pacf}
+pacf(centered_SA_diff, main = "PACF Plot of SA Differences 2010-2018")
+```
+
+
+### Model identification for NSA data
+
+```{r plot_ts_nsa}
+PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
+nfp_nsa_ts <- ts(PAYNSA[853:951,][2])
+NSA_diff <- diff(nfp_nsa_ts, lag = 1, differences = 1)
+
+NSA_mean <- mean(NSA_diff, na.rm = TRUE)
+centered_NSA_diff <- NSA_diff - NSA_mean
+plot.ts(centered_NSA_diff, main = "Centered NSA Diffs, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
+
+NSA_sdiff <- diff(nfp_nsa_ts, lag = 12, differences = 1)
+NSA_smean <- mean(NSA_sdiff)
+centered_NSA_sdiff <- NSA_sdiff - NSA_smean
+plot.ts(centered_NSA_sdiff, main = "Centered NSA Seasonal DIffs, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls")
+
+NSA_sdiff2 <- diff(NSA_sdiff, lag = 1, differences = 1)
+plot.ts(NSA_sdiff2, main = "NSA Seasonal Diffs Differenced Again")
+```
+
+It appears that after seasonal differencing with seasonal period of 12 months then differencing again, the transformed time series closely resembles white noise.
+
+
+```{r plot_acf_nsa}
+# acf(centered_NSA_diff, main = "ACF Plot of NSA Differences 2010-2018")
+# acf(centered_NSA_sdiff, main = "ACF Plot of NSA Seasonal Differences 2010-2018")
+acf(NSA_sdiff2, main = "ACF Plot of NSA Seasonal Diffs Differenced Again")
+```
+
+The ACF does not appear to be significant at any lag.
+
+
+```{r plot_pacf_nsa}
+# pacf(centered_NSA_diff, main = "PACF Plot of NSA Differences 2010-2018")
+# pacf(centered_NSA_sdiff, main = "PACF Plot of NSA Seasonal Differences 2010-2018")
+pacf(NSA_sdiff2, main = "PACF Plot of NSA Seasonal Diffs Differenced Again")
+```
+
+The PACF also does not appear to be significant at any lag.
+
+The insignificant ACF and PACF for all lag values further supports the notion that our transformed time series is very close to white noise.
+
+
+### Parameter Estimation and Model Diagnostics
+
+```{r model_fitting}
+## First Difference
+sarima(centered_NSA_diff, p = 1, d = 0, q = 0, D = 1, S = 12)
+
+## Seasonal Diff then Differenced Again
+sarima(NSA_sdiff2, p = 0, d = 0, q = 1)
+```
+
+AIC values are similar for all orders after model fitting.
+
+Because our transformed time series so closely resembles white noise, it is essentially ARMA(0, 0) and fitting any non-zero order ARMA model does not have any predictive properties. Therefore, instead of fitting an ARMA model we turn to spectral analysis to analyze the seasonal variation of our time series from a frequency perspective.
