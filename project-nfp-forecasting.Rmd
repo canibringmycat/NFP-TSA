@@ -1,5 +1,5 @@
 ---
-title: "NFP Forecasting"
+title: "Project NFP - Forecasting"
 author: "Sam Choi, Eric Xu"
 output:
   html_document:
