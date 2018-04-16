@@ -2,6 +2,8 @@
 title: "Project NFP - ARIMA Modeling"
 author: "Sam Choi, Eric Xu"
 output:
+  html_document:
+      keep_md: true
   pdf_document: default
 ---
 
