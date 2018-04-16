@@ -63,3 +63,7 @@ mvspec(differenced_NSA, k, log="no", taper = 0.1)
 ```
 
 The tapering does not change the estimate spectral density significantly and the same frequency peaks remain. This suggests our data set has very clean and predictable cyclical variation.
+
+### Parametric Spectral Estimation
+
+Based on our findings from the ARIMA modeling process, we believe a lagged difference with lag = 12 months and differencing again produces a stationary transformed time series that closely resembles white noise. Therefore, we concluded that fitting an ARMA model with non-zero order would not produce useful information. This suggests that parametric spectral estimation is a poor method for estimating the spectral density, because for all non-zero p, an AR(p) model would produce a poor fit and introduce a dependency structure to uncorrelated white nosie, creating bias in the estimated spectral density.
