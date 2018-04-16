@@ -1,0 +1,54 @@
+---
+title: "Project NFP - Forecasting"
+author: "Sam Choi, Eric Xu"
+output:
+  html_document:
+    fig_height: 3
+    fig_width: 5
+    keep_md: true
+  pdf_document: default
+  word_document: default
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+library(DataComputing)
+library(astsa)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+#### Objective
+Using data from January 2010 to March 2017, we aim to forecast Nonfarm payrolls for the following 12 months (April 2017 to March 2018).
+<br>
+
+#### SA (PAYEMS) and NSA (PAYNSA) NFP Data
+```{r}
+PAYEMS <- read.csv(file = "PAYEMS.csv", header = TRUE, sep = ",")
+PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
+nfp_sa_ts <- ts(PAYEMS[2])
+nfp_nsa_ts <- ts(PAYNSA[2])
+```
+
+#### Splitting the dataset
+Training: January 2010 - March 2017
+Testing: April 2017 - March 2018
+```{r}
+nfp_sa_training_ts <- ts(PAYEMS[853:939,][2])
+nfp_sa_testing_ts <- ts(PAYEMS[940:951,][2])
+nfp_nsa_training_ts <- ts(PAYNSA[853:939,][2])
+nfp_nsa_testing_ts <- ts(PAYNSA[940:951,][2])
+```
+
+#### 
+
+
+
+
+
+
+
+
+
+
+

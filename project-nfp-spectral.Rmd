@@ -2,13 +2,20 @@
 title: "Project NFP - Spectral Analysis"
 author: "Sam Choi, Eric Xu"
 date: "4/11/2018"
-output: pdf_document
+output:
+  html_document:
+    fig_height: 3
+    fig_width: 5
+    keep_md: true
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(DataComputing)
 library(astsa)
-setwd("~/Dropbox/Berkeley/stat153/NFP-TSA/")
+#setwd("~/Dropbox/Berkeley/stat153/NFP-TSA/")
 ```
 
 ## Spectral Analysis
