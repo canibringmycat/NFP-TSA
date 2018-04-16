@@ -1,0 +1,40 @@
+---
+title: "Project NFP - Final Report"
+author: "Sam Choi, Eric Xu"
+date: "4/17/2018"
+output:
+  html_document:
+      fig_height: 3
+      fig_width: 5
+      keep_md: true
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DataComputing)
+library(astsa)
+#setwd("~/Dropbox/Berkeley/stat153/NFP-TSA/")
+```
+
+### Introduction
+- what do we care about the dataset? the purpose of the analysis?
+
+### Data Analysis
+- EDA
+- Model Building (ARIMA, Spectral)
+- Forecasting
+
+##### Data
+- univariate
+- regularly spaced
+- not too many outliers
+- have ~100 observations
+- source
+
+### Conclusion
+- Key Findings
+
+
+
+
