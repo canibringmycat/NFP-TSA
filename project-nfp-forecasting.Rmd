@@ -41,7 +41,22 @@ nfp_nsa_training_ts <- ts(PAYNSA[853:939,][2])
 nfp_nsa_testing_ts <- ts(PAYNSA[940:951,][2])
 ```
 
-#### 
+#### Forecast Performance
+Generate forecasts and measure accuracy by calculating mean-squared error
+s
+Mean-squared error function
+```{r}
+mse <- function(ts1, ts2) {
+  sum_squares = 0
+  for (i in 1:length(ts1)) {
+    diff <- ts1[i] - ts2[i]
+    sum_squares = sum_squares + diff^2
+  }
+  sum_squares/length(ts1)
+}
+
+```
+
 
 
 
