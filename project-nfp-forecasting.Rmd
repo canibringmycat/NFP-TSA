@@ -18,8 +18,9 @@ library(astsa)
 ```{r, results='asis', echo=FALSE}
 includeSourceDocuments()
 ```
+
 #### Objective
-Using data from January 2010 to March 2017, we aim to forecast Nonfarm payrolls for the following 12 months (April 2017 to March 2018).
+Using data from January 2010 to March 2017, we aim to forecast Nonfarm payrolls for the following 12 months (April 2017 to March 2018).  
 <br>
 
 #### SA (PAYEMS) and NSA (PAYNSA) NFP Data
@@ -31,8 +32,8 @@ nfp_nsa_ts <- ts(PAYNSA[2])
 ```
 
 #### Splitting the dataset
-Training: January 2010 - March 2017
-Testing: April 2017 - March 2018
+Training: January 2010 - March 2017  
+Testing: April 2017 - March 2018  
 ```{r}
 nfp_sa_training_ts <- ts(PAYEMS[853:939,][2])
 nfp_sa_testing_ts <- ts(PAYEMS[940:951,][2])
