@@ -32,7 +32,6 @@ plot.ts(nfp_sa_ts, main = "Seasonally Adjusted Total Nonfarm Payrolls", xlab = "
 ```
 
 
-
 #### Not Seasonally Adjusted (PAYNSA)
 ```{r out.width = "70%", dpi = 400}
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")

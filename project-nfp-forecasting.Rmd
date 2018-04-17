@@ -42,8 +42,18 @@ nfp_nsa_testing_ts <- ts(PAYNSA[940:951,][2])
 ```
 
 #### Forecast Performance
-Generate forecasts and measure accuracy by calculating mean-squared error
-s
+Generate ARIMA forecasts and measure accuracy by calculating mean-squared errors
+
+```{r}
+nobs <- length(nfp_nsa_training_ts)
+fit <- arima(nfp_nsa_training_ts, order=c(0, 1, 0), xreg=1:nobs)
+n_pred <- length(nfp_nsa_testing_ts)
+forecast <- predict(fit, n_predictions, newxreg=(nobs+1):(nobs+n_pred))
+par(mfrow=c(2,1))
+ts.plot(nfp_nsa_training_ts, forecast$pred)
+```
+
+
 Mean-squared error function
 ```{r}
 mse <- function(ts1, ts2) {
@@ -57,9 +67,18 @@ mse <- function(ts1, ts2) {
 
 ```
 
+```{r}
+mse(forecast$pred, nfp_nsa_testing_ts)
+```
 
+```{r}
+sfit <- sarima.for(nfp_nsa_training_ts, n_pred, p=0, d=1, q=0, P=0, D=1, Q=0, S=12)
+```
 
-
+```{r}
+sfit
+mse(sfit$pred, nfp_nsa_testing_ts)
+```
 
 
 
