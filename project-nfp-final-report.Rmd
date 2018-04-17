@@ -73,28 +73,12 @@ Figure 2. Differenced NSA data and distribution of change in payrolls
 
 Taking the first difference appears to have detrended the original time series, and plotting the histogram indicates that the change in total payrolls may follow a left-skewed distribution, characterized by the long left tail above. 
 
-Next we mean-center the differenced NSA time series:
-
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-NSA_mean <- mean(NSA_diff, na.rm = TRUE)
-centered_NSA_diff <- NSA_diff - NSA_mean
-plot.ts(centered_NSA_diff, main = "Mean-Centered NSA Differences, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-```
-
-\begin{center}
-Figure 3. Mean-centered NSA time series
-\end{center}
-
-The resulting time series above shows signs of stationarity: The plot appears to have a consistent mean and variance with respect to time.
+Next we mean-center the differenced NSA time series (Figure A in Appendix). The resulting time series above shows signs of stationarity: The plot appears to have a consistent mean and variance with respect to time.
 
 
 ## ARIMA Model Building
 
-We will use the Box-Jenkins method to build an ARIMA model for the non-seasonally adjusted (NSA) NFP data. We begin by transforming the data set to achieve stationarity.
-
-### Transforming the dataset to achieve stationarity
-
-We begin by transforming the data set to achieve stationarity. We do so by first using a lagged difference with a period of 12 months, producing a time series that resembles a random walk. We then apply differencing again to achieve stationarity.
+We will use the Box-Jenkins method to build an ARIMA model for the non-seasonally adjusted (NSA) NFP data. We begin by transforming the data set to achieve stationarity. We do so by first using a lagged difference with a period of 12 months, producing a time series that resembles a random walk. We then apply differencing again to achieve stationarity.
 
 ```{r fig.align='center', fig.height = 2.7, echo=FALSE}
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
@@ -112,23 +96,21 @@ plot.ts(NSA_sdiff2, main = "After Differencing Again", cex.main=0.8, cex.lab=0.5
 ```
 
 \begin{center}
-Figure 4. NSA data after lagged difference (left) and after lagged difference plus differencing again (right)
+Figure 3. NSA data after lagged difference (left) and after lagged difference plus differencing again (right)
 \end{center}
 
 This now resembles white noise with fairly consistent variance, with slightly higher variance in the first 20 months of the data.
-
-### Model selection
 
 We now inspect the ACF and PACF plots of the transformed time series.
 
 ```{r fig.align='center', fig.height = 2.7, echo=FALSE}
 par(mfrow=c(1,2))
-acf(NSA_sdiff2, main = "ACF", cex.main=0.6)
-pacf(NSA_sdiff2, main = "PACF", cex.main=0.6)
+acf(NSA_sdiff2, main = "ACF", cex.main=0.4)
+pacf(NSA_sdiff2, main = "PACF", cex.main=0.4)
 ```
 
 \begin{center}
-Figure 5. ACF and PACF plots of the transformed time series
+Figure 4. ACF and PACF plots of the transformed time series
 \end{center}
 
 Neither the ACF nor PACF appear to be significant at any lag. This further supports the notion that our transformed time series is very close to white noise, or an ARMA(0, 0) model. Therefore, fitting any non-zero order ARMA model and proceeding with parameter estimation will likely produce a model with poor predictive properties including bias. Therefore, instead of fitting an ARMA model we turn to spectral analysis to analyze the seasonal variation of our time series from a frequency perspective.
@@ -136,13 +118,11 @@ Neither the ACF nor PACF appear to be significant at any lag. This further suppo
 
 ## Spectral Analysis
 
-Analyzing the time series using spectral analysis allows us to identify the key frequencies of variation in the non-seasonally adjusted NFP time series. 
-
-We begin by transforming the dataset into a stationary time series. We will compare the estimated spectral densities for two methods of transformation: differencing and curve-fitting. We will refer to the time series transformed by curve-fitting as the detrended time series.
+Analyzing the time series using spectral analysis allows us to identify the key frequencies of variation in the non-seasonally adjusted NFP time series. We begin by transforming the dataset into a stationary time series. We will compare the estimated spectral densities for two methods of transformation: differencing and curve-fitting. We will refer to the time series transformed by curve-fitting as the detrended time series.
 
 ### Nonparametric Spectral Estimation
 
-We begin by generating raw periodograms for both the differenced and detrended time series. These can be viewed in Figure A in the Appendix. As expected, both periodograms are bumpy with similar peaks. To reduce the variance of the periodogram and better identify significant peaks, we will apply smoothing to the periodogram using various parameters to find a better estimate of the spectral density. We begin with a daniell kernel with m = 1.
+We begin by generating raw periodograms for both the differenced and detrended time series. These can be viewed in Figure A in the Appendix. As expected, both periodograms are bumpy with similar peaks. To reduce the variance of the periodogram and better identify significant peaks, we will smooth the periodogram using various parameters. We begin with a daniell kernel with m = 1.
 
 ```{r fig.align='center', fig.height = 2.7, echo=FALSE}
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
@@ -155,10 +135,10 @@ mvspec(nfp_nsa_ts_2010_2018, kernel("daniell", 1), log = "no", main = "Periodogr
 ```
 
 \begin{center}
-Figure 6. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 1)
+Figure 5. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 1)
 \end{center}
 
-This looks quite smooth already. Using m = 2 results in wider peaks shown in Figure B in the Appendix, possibly introducing bias. Therefore, setting m = 1 is an adequate amount of smoothing that allows us to identify significant peaks while minimizing bias.
+This looks quite smooth already. Using m = 2 results in wider peaks shown in Figure B in the Appendix, possibly introducing bias. Therefore, setting m = 1 is an adequate amount of smoothing that minimizes bias.
 
 To further reduce bias and narrow the peaks, we can apply smoothing with the modified Daniell kernel with m = 1. The periodogram is very smooth, so tapering has little effect. This suggests our data set has very clean and predictable cyclical variation, and we can now find the frequencies of the most significant peaks. We set the taper to 0.1 and overlay the local maxima to show where key frequencies might be.
 
@@ -177,7 +157,7 @@ abline(v=key_freq, lty=2)
 ```
 
 \begin{center}
-Figure 7. Smoothed and tapered periodograms overlaid with local maxima (dashed lines)
+Figure 6. Smoothed and tapered periodograms overlaid with local maxima (dashed lines)
 \end{center}
 
 Smoothing using the modified Daniell kernel produces much sharper peaks. There does not appear to be much bumpiness remaining so tapering should not be necessary. To see the smoothed and tapered periodogram, see Figure C in the Appendix.
@@ -207,7 +187,7 @@ lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
 ```
 
 \begin{center}
-Figure 8. Smoothed and tapered periodograms overlaid with parametric spectral estimator (dashed red)
+Figure 7. Smoothed and tapered periodograms overlaid with parametric spectral estimator (dashed red)
 \end{center}
 
 The parametric spectral estimator has peaks at frequencies 0.08, 0.17, 0.25, 0.33, 0.42, and 0.50. This matches the frequencies of peaks seen in the differenced and detrended time series. However, the size of the peaks at these frequencies differs between the two time series. The peaks have similar magnitude between the parametric and non parametric methods, suggesting that the peaks are indeed signficant.
@@ -269,7 +249,7 @@ Through the EDA process, we have seen that job growth from 2010 to 2018 has been
 
 ## Interesting Findings
 
-Cycles of variation every quarter, six months, and each year align with the seasons. This means that the season is a key predictor of payroll performance, providing support for the idea that many financial markets are closely tied to the time of year.
+Cycles of variation every quarter, six months, and each year align with the seasons. This means that the season is a key predictor of payroll performance, providing support for the idea that many financial markets have seasonal performance.
 
 Differencing and detrending the NSA data using curve-fitting resulted in different key frequencies being highlighted as most significant by the spectral estimation process. Looking at both allowed and comparing with parametric spectral estimation allowed us to determine the three most significant frequencies of variation.
 
@@ -287,6 +267,16 @@ Multivariate time series analysis comparing payroll data with factors such as GD
 
 ## Figures
 
+```{r fig.align='center', fig.height = 2.7, echo=FALSE}
+NSA_mean <- mean(NSA_diff, na.rm = TRUE)
+centered_NSA_diff <- NSA_diff - NSA_mean
+plot.ts(centered_NSA_diff, main = "Mean-Centered NSA Differences, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
+```
+
+\begin{center}
+Figure A. Mean-centered NSA time series
+\end{center}
+
 ```{r fig.align='center', fig.height = 3, echo=FALSE}
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
 nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
@@ -299,7 +289,7 @@ mvspec(nfp_nsa_ts_2010_2018, main = "Periodogram (Detrended)")
 ```
 
 \begin{center}
-Figure A. Raw periodograms of differenced (left) and detrended (right) NSA data
+Figure B. Raw periodograms of differenced (left) and detrended (right) NSA data
 \end{center}
 
 The differenced time series produces a raw periodogram with a much lower baseline in the 0.0 to 0.1 frequency range and the detrended time series produces a raw periodogram with a lower baseline in the 0.26 to 0.28 frequency range. This means in the differenced time series, the peak at a frequency of about 0.08 is more significant, and in the detrended time series, the peaks at 0.25 and 0.33 are more significant. 
@@ -311,7 +301,7 @@ mvspec(nfp_nsa_ts_2010_2018, kernel("daniell", 2), log = "no", main = "Periodogr
 ```
 
 \begin{center}
-Figure B. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 2)
+Figure C. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 2)
 \end{center}
 
 ```{r fig.align='center', fig.height = 3, echo=FALSE}
@@ -321,7 +311,7 @@ mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no", taper = 
 ```
 
 \begin{center}
-Figure C. Smoothed and tapered periodograms of differenced and detrended time series using a modified Daniell kernel (m = 1)
+Figure D. Smoothed, tapered periodograms of differenced and detrended time series using a modified Daniell kernel (m = 1)
 \end{center}
 
 
