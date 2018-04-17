@@ -23,7 +23,7 @@ We aim to use spectral analysis to find the key frequencies of variation in the 
 
 ### Raw Periodogram
 
-We begin our spectral analysis by detrending the spectral density using a first difference and estimating the spectral density of the detrended time series using a raw periodogram.
+We begin our spectral analysis by transforming the spectral density using a first difference and estimating the spectral density of the transformed time series using a raw periodogram. We compare this to generating a raw periodogram using the detrending process in spec.pgram.
 
 ```{r periodogram}
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
@@ -43,23 +43,93 @@ Compared to the raw periodogram of the data detrended using the mvspec default, 
 
 ### Smoothing the Periodogram
 
-To improve our spectral estimator, we will smooth the periodogram using various parameters to find a better estimate of the spectral density. First we use a daniell kernel with m = 4.
+To improve our spectral estimator, we will smooth the periodogram using various parameters to find a better estimate of the spectral density. First we use a daniell kernel with m = 1.
 
 ```{r smooth}
-k = kernel("daniell", 4)
-mvspec(differenced_NSA, k, log = "no")
-mvspec(nfp_nsa_ts_2010_2018, k, log = "no")
+mvspec(differenced_NSA, kernel("daniell", 1), log = "no")
+mvspec(nfp_nsa_ts_2010_2018, kernel("daniell", 1), log = "no")
 ```
 
-The smoothed periodgram shows the greatest variance in the 0.13 to 0.21 frequency range, which corresponds to one cycle every 5-7 months, or approximately a semiannual cycle. There is also a smaller peak at 0.46, corresponding to a cycle every 2 months, and a third peak at 0.29 to 0.37, corresponding to a cycle every 2.7-3.4 months, or a quarterly cycle.
+This looks quite smooth already. Using m = 2 results in the following smoothed periodograms.
+
+```{r smooth2}
+mvspec(differenced_NSA, kernel("daniell", 2), log = "no")
+mvspec(nfp_nsa_ts_2010_2018, kernel("daniell", 2), log = "no")
+```
+
+The peaks are in the same frequencies, but the smoothing has widened the peaks, possibly introducing bias. Setting m = 1 is an adequate amount of smoothing because we can identify significant peaks while minimizing bias.
+
+Now we try the modified danielle kernel with m = 1.
+
+```{r modified}
+mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no")
+mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no")
+```
+
+This produces much sharper peaks. We can identify two major peaks: one at a frequency of about 0.17, corresponding to a semiannual cycle, and one at a frequency of about 0.33, corresponding to a quarterly cycle.
 
 The smoothed periodogram of the detrended data has a sharp peak at 0.04 and much lower peaks in the 2 month and quarterly cycle frequency range. Based on visual inspection of the time series plot, we believe that the peaks in the quarterly cycle frequency range in particular represent key frequencies of variation, suggesting that the differenced data set produces a smoothed periodogram with more significant peaks.
 
-Now we set taper to 0.1. ADD REASONING.
+There does not appear to be much bumpiness remaining so tapering should not be necessary. To check, we set taper to 0.1.
 
 ```{r taper}
-# mvspec(nfp_nsa_ts_2010_2018, k, log="no", taper = 0.1)
-mvspec(differenced_NSA, k, log="no", taper = 0.1)
+mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no", taper = 0.2)
+mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no", taper = 0.2)
 ```
 
 The tapering does not change the estimate spectral density significantly and the same frequency peaks remain. This suggests our data set has very clean and predictable cyclical variation.
+
+```{r}
+pgram_detrend <- mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no")
+pgram_diffed <- mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no")
+
+
+key_freq_ind <- c(1, which(diff(sign(diff(pgram_detrend$spec)))==-2) + 1)
+key_freq <- pgram_detrend$freq[key_freq_ind]
+abline(v=key_freq, lty=2)
+
+key_freq_ind <- c(1, which(diff(sign(diff(pgram_diffed$spec)))==-2) + 1)
+key_freq <- pgram_diffed$freq[key_freq_ind]
+abline(v=key_freq, lty=2)
+```
+
+Comparing with the parametric spectral estimator.
+
+```{r}
+pgram_ar <- spec.ar(differenced_NSA, plot=F)
+lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
+```
+
+Based on our findings from the ARIMA modeling process, we believe a lagged difference with lag = 12 months and differencing again produces a stationary transformed time series that closely resembles white noise. Therefore, we concluded that fitting an ARMA model with non-zero order would not produce useful information. This suggests that parametric spectral estimation is a poor method for estimating the spectral density, because for all non-zero p, an AR(p) model would produce a poor fit and introduce a dependency structure to uncorrelated white nosie, creating bias in the estimated spectral density.
+
+Now we use the top key frequencies to model the 
+
+```{r}
+top_freq <- c(0.17, 0.33, 0.08)
+t <- 1:length(nfp_nsa_ts_2010_2018)
+periodic_terms <- do.call(cbind, lapply(top_freq, function(freq) {
+  cbind(cos(2 * pi * freq * t), sin(2 * pi * freq * t))
+}))
+df <- data.frame(nfp_nsa_ts_2010_2018, t, periodic_terms)
+fit_final <- lm(nfp_nsa_ts_2010_2018 ~ ., df)
+plot(t, nfp_nsa_ts_2010_2018, type="l")
+lines(t, fit_final$fitted.values, lty=2, col="red")
+```
+
+### Spectral Forecasting
+
+```{r spec_forecasting}
+t_new <- (tail(t, 1) + 1):(tail(t, 1) + 24)
+periodic_terms_new <- do.call(cbind, lapply(top_freq, function(freq) {
+  cbind(cos(2 * pi * freq * t_new), sin(2 * pi * freq * t_new))
+}))
+df_new <- data.frame(t_new, periodic_terms_new)
+colnames(df_new) <- colnames(df)[-1]
+predictions <- predict.lm(fit_final, newdata=df_new, interval="prediction", level=.95)
+plot(t, nfp_nsa_ts_2010_2018, type="l", xlim=c(0, tail(t_new, 1)), ylim=c(125000, 155000))
+lines(t, fit_final$fitted.values, lty=2, col="red")
+lines(t_new, predictions[, "fit"], col="blue")
+matlines(t_new, predictions[, 2:3], col = "purple", lty=3)
+```
+
+
