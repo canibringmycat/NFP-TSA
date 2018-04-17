@@ -143,10 +143,13 @@ The parametric spectral estimator has peaks at frequencies 0.08, 0.17, 0.25, 0.3
 The peaks at 0.08, 0.17 match the detrended time series periodogram in frequency and size, with much less significant peaks at the other frequencies. The differenced time series has its three major peaks at 0.17, 0.33, and 0.50, with much less significant peaks at the other frequencies. 
 
 
-
 ## Forecasting
+Using data from January 2010 to March 2017, we aim to forecast Nonfarm payrolls for the following 12 months (April 2017 to March 2018). 
 
 ### ARIMA
+
+
+
 
 ### Spectral
 
