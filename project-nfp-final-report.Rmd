@@ -2,12 +2,14 @@
 title: "Project NFP - Final Report"
 author: "Sam Choi, Eric Xu"
 date: "4/17/2018"
+geometry: margin=0.75in
 output:
+  pdf_document: default
   html_document:
       fig_height: 3
       fig_width: 5
       keep_md: true
-  pdf_document: default
+  
 ---
 
 ```{r setup, include=FALSE}
@@ -17,20 +19,129 @@ library(astsa)
 #setwd("~/Dropbox/Berkeley/stat153/NFP-TSA/")
 ```
 
-### Introduction
+# Introduction
 - what do we care about the dataset? the purpose of the analysis?
 
-### Data Analysis
-- EDA
-- Model Building (ARIMA, Spectral)
-- Forecasting
-
-##### Data
+### Data
 - univariate
 - regularly spaced
 - not too many outliers
 - have ~100 observations
 - source
+
+
+# Data Analysis
+
+## Exploratory Data Analysis
+
+We aim to explore PAYNSA, PAYEMS a dataset of non farm payrolls without seasonal adjustments. The data is recorded in thousands of persons, and contains monthly NFP report values from January 1939 to March 2018.  
+
+#### Not Seasonally Adjusted (PAYNSA)
+```{r}
+```
+
+#### Narrowing Our Scope
+Throughout the 80 years represented in these datasets, various events have occurred that significantly changed the conditions of the economy. For this reason, we will limit our analysis to the years that followed the financial crisis of 2007/2008. By narrowing our scope to 2010-2018, we aim to provide a more telling analysis of the trends associated with the post-recession economic recovery.
+
+#### Not Seasonally Adjusted (PAYNSA) 2010-2018
+```{r}
+```
+
+### Change in Payrolls
+First order differencing of SA and NSA data
+
+#### NSA Differences 2010-2018
+```{r}
+```
+Taking the first difference seems to have detrended the original time series, and plotting the histogram indicates that the change in total payrolls may follow a left-skewed distribution, characterized by the long left tail above. 
+
+Next we mean-center the SA_diff time series:  
+```{r}
+```
+
+*make note on stationarity
+
+
+## ARIMA Model Building
+
+We will use the Box-Jenkins method to build an ARIMA model for the non-seasonally adjusted (NSA) NFP data. We begin by transforming the data set to achieve stationarity.
+
+### Transforming the dataset to achieve stationarity
+
+We begin by transforming the data set to achieve stationarity. We do so by first using a lagged difference with a period of 12 months, producing a time series that resembles a random walk. We then apply differencing again to achieve stationarity.
+
+Figure #. NSA data after lagged difference (left) and after lagged difference plus differencing again (right)
+
+This now resembles white noise with fairly consistent variance, with slightly higher variance in the first 20 months of the data.
+
+### Model selection
+
+We now inspect the ACF and PACF plots of the transformed time series.
+
+Figure #. ACF and PACF plots of the transformed time series
+
+
+Neither the ACF nor PACF appear to be significant at any lag. This further supports the notion that our transformed time series is very close to white noise, or an ARMA(0, 0) model. Therefore, fitting any non-zero order ARMA model and proceeding with parameter estimation will likely produce a model with poor predictive properties including bias. Therefore, instead of fitting an ARMA model we turn to spectral analysis to analyze the seasonal variation of our time series from a frequency perspective.
+
+
+## Spectral Analysis
+
+Analyzing the time series using spectral analysis allows us to identify the key frequencies of variation in the non-seasonally adjusted NFP time series. 
+
+We begin by transforming the dataset into a stationary time series. We will compare the estimated spectral densities for two methods of transformation: differencing and curve-fitting. We will refer to the time series transformed by curve-fitting as the detrended time series.
+
+### Nonparametric Spectral Estimation
+
+We begin by generating raw periodograms for both the differenced and detrended time series. 
+
+Figure #. Differenced and detrended raw periodograms
+
+As expected, both periodograms are bumpy with similar peaks, but the differenced time series produces a raw periodogram with a much lower baseline in the 0.0 to 0.1 frequency range and the detrended time series produces a raw periodogram with a lower baseline in the 0.26 to 0.28 frequency range. This means in the differenced time series, the peak at a frequency of about 0.08 is more significant, and in the detrended time series, the peaks at 0.25 and 0.33 are more significant. 
+To reduce the variance of the periodogram and better identify significant peaks, we will apply smoothing to the periodogram using various parameters to find a better estimate of the spectral density. We begin with a daniell kernel with m = 1.
+
+Figure #. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 1)
+
+This looks quite smooth already. Using m = 2 results in the following smoothed periodograms.
+
+Figure #. Figure #. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 2)
+
+The peaks are in the same frequencies, but the smoothing has widened the peaks, possibly introducing bias. Therefore, setting m = 1 is an adequate amount of smoothing that allows us to identify significant peaks while minimizing bias.
+
+To further reduce bias and narrow the peaks, we can apply smoothing with the modified Daniell kernel with m = 1.
+
+Figure #. Smoothed periodograms of differenced and detrended time series using a modified Daniell kernel (m = 1)
+
+Smoothing using the modified Daniell kernel produces much sharper peaks. There does not appear to be much bumpiness remaining so tapering should not be necessary. To check, we set taper to 0.2.
+
+Figure #. Smoothed and tapered periodograms of differenced and detrended time series using a modified Daniell kernel (m = 1)
+
+The tapering does not change the estimate spectral density significantly and the same frequency peaks remain. This suggests our data set has very clean and predictable cyclical variation, and we can now find the frequencies of the most significant peaks. We do so by finding the local maxima (Method from Stack Overflow).
+
+Figure #. Smoothed and tapered periodograms overlaid with local maxima.
+
+In the differenced time series, we can identify three major peaks: one at a frequency of about 0.17, corresponding to a semiannual cycle, one at a frequency of about 0.5, corresponding to a two-month cycle, and one at a frequency of about 0.33, corresponding to a quarterly cycle.
+
+The smoothed periodogram of the detrended data has two major peaks: one at a frequency of about 0.08, corresponding to an annual cycle, the largest at a frequency of about 0.17, corresponding to a semiannual cycle, and one at a frequency of 0.08, corresponding to an annual cycle. Two other, less significant peaks appear, one at 0.01 and one at 0.5.
+
+### Parametric Spectral Estimation
+
+We can now compare our smoothed and tapered periodograms with the estimated spectral density generating using parametric spectral estimation.
+
+Figure #. Smoothed and tapered periodograms overlaid with parametric spectral estimator. 
+
+The parametric spectral estimator has peaks at frequencies 0.08, 0.17, 0.25, 0.33, 0.42, and 0.50. This matches the frequencies of peaks seen in the differenced and detrended time series. However, the size of the peaks at these frequencies differs between the two time series.
+
+The peaks at 0.08, 0.17 match the detrended time series periodogram in frequency and size, with much less significant peaks at the other frequencies. The differenced time series has its three major peaks at 0.17, 0.33, and 0.50, with much less significant peaks at the other frequencies. 
+
+
+
+## Forecasting
+
+### ARIMA
+
+### Spectral
+
+
 
 ### Conclusion
 - Key Findings
