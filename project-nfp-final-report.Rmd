@@ -237,7 +237,7 @@ mse <- function(ts1, ts2) {
 
 We proceed with a non-seasonal ARIMA model, as well as a SARIMA model to fit the general trend of the data, as well as the seasonal trends observed:
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
+```{r fig.align='center', fig.height = 3, echo=FALSE}
 nobs <- length(nfp_nsa_training_ts)
 fit <- arima(nfp_nsa_training_ts, order=c(0, 1, 0), xreg=1:nobs)
 n_pred <- length(nfp_nsa_testing_ts)
@@ -245,7 +245,7 @@ forecast <- predict(fit, n_pred, newxreg=(nobs+1):(nobs+n_pred))
 
 par(mfrow=c(1, 2))
 
-ts.plot(nfp_nsa_training_ts, forecast$pred, col=c("black", "red"), ylab = "Total Payrolls", main = "ARIMA Model Forecast", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
+ts.plot(nfp_nsa_training_ts, forecast$pred, col=c("black", "red"), ylab = "Total Payrolls", main = "ARIMA Model Forecast")
 sfit <- sarima.for(nfp_nsa_training_ts, n_pred, p=0, d=1, q=0, P=0, D=1, Q=0, S=12)
 ```
 
