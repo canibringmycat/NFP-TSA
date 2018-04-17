@@ -48,8 +48,8 @@ nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
 
 par(mfrow=c(1,2))
 
-plot.ts(nfp_nsa_ts, main = "Nonfarm Payrolls 1939-2018", xlab = "Months (since January 1939)", ylab = "Number of Payrolls", cex.main=0.7, cex.lab=0.5, cex.axis=0.3)
-plot.ts(nfp_nsa_ts_2010_2018, main = "Nonfarm Payrolls 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.7, cex.lab=0.5, cex.axis=0.3)
+plot.ts(nfp_nsa_ts, main = "Nonfarm Payrolls 1939-2018", xlab = "Months (since January 1939)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
+plot.ts(nfp_nsa_ts_2010_2018, main = "Nonfarm Payrolls 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
 ```
 
 \begin{center}
