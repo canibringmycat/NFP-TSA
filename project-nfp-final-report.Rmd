@@ -159,19 +159,7 @@ Figure #. Smoothed periodograms of differenced and detrended time series using a
 
 This looks quite smooth already. Using m = 2 results in wider peaks shown in the Appendix, possibly introducing bias. Therefore, setting m = 1 is an adequate amount of smoothing that allows us to identify significant peaks while minimizing bias.
 
-To further reduce bias and narrow the peaks, we can apply smoothing with the modified Daniell kernel with m = 1.
-
-```{r fig.height = 3, echo=FALSE}
-par(mfrow=c(1,2))
-mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no")
-mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no")
-```
-
-Figure #. Smoothed periodograms of differenced and detrended time series using a modified Daniell kernel (m = 1)
-
-Smoothing using the modified Daniell kernel produces much sharper peaks. There does not appear to be much bumpiness remaining so tapering should not be necessary. To see the smoothed and tapered periodogram, see Appendix.
-
-The tapering does not change the estimated spectral density significantly and the same frequency peaks remain. This suggests our data set has very clean and predictable cyclical variation, and we can now find the frequencies of the most significant peaks. We do so by finding the local maxima (Method from Stack Overflow).
+To further reduce bias and narrow the peaks, we can apply smoothing with the modified Daniell kernel with m = 1. The periodogram is very smooth, so tapering has little effect. This suggests our data set has very clean and predictable cyclical variation, and we can now find the frequencies of the most significant peaks. We set the taper to 0.1 and overlay the local maxima to show where key frequencies might be.
 
 ```{r fig.height = 3, echo=FALSE}
 par(mfrow=c(1,2))
@@ -188,6 +176,8 @@ abline(v=key_freq, lty=2)
 ```
 
 Figure #. Smoothed and tapered periodograms overlaid with local maxima.
+
+Smoothing using the modified Daniell kernel produces much sharper peaks. There does not appear to be much bumpiness remaining so tapering should not be necessary. To see the smoothed and tapered periodogram, see Appendix.
 
 In the differenced time series, we can identify three major peaks: one at a frequency of about 0.17, corresponding to a semiannual cycle, one at a frequency of about 0.5, corresponding to a two-month cycle, and one at a frequency of about 0.33, corresponding to a quarterly cycle.
 
