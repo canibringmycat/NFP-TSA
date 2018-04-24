@@ -6,8 +6,6 @@ output:
     fig_height: 3
     fig_width: 5
     keep_md: true
-  pdf_document: default
-  word_document: default
 ---
 <!-- Don't edit in between this line and the one below -->
 ```{r include=FALSE}
@@ -44,11 +42,12 @@ nfp_nsa_testing_ts <- ts(PAYNSA[940:951,][2])
 #### Forecast Performance
 Generate ARIMA forecasts and measure accuracy by calculating mean-squared errors
 
-```{r}
+```{r out.width = "70%", dpi = 400}
+par(mar=c(1,1,1,1))
 nobs <- length(nfp_nsa_training_ts)
 fit <- arima(nfp_nsa_training_ts, order=c(0, 1, 0), xreg=1:nobs)
 n_pred <- length(nfp_nsa_testing_ts)
-forecast <- predict(fit, n_predictions, newxreg=(nobs+1):(nobs+n_pred))
+forecast <- predict(fit, n_pred, newxreg=(nobs+1):(nobs+n_pred))
 par(mfrow=c(2,1))
 ts.plot(nfp_nsa_training_ts, forecast$pred)
 ```
@@ -71,7 +70,8 @@ mse <- function(ts1, ts2) {
 mse(forecast$pred, nfp_nsa_testing_ts)
 ```
 
-```{r}
+```{r out.width = "70%", dpi = 400}
+par(mar=c(1,1,1,1))
 sfit <- sarima.for(nfp_nsa_training_ts, n_pred, p=0, d=1, q=0, P=0, D=1, Q=0, S=12)
 ```
 
