@@ -1,5 +1,5 @@
 ---
-title: "Project NFP"
+title: "Project NFP - EDA"
 author: "Sam Choi, Eric Xu"
 output:
   html_document:

@@ -1,24 +1,10 @@
----
-title: "Time Series Analysis of Non-Farm Payroll Data"
-author: "Sam Choi, Eric Xu"
-date: "4/17/2018"
-geometry: margin=0.5in
-output:
-  html_document:
-      fig_height: 3
-      fig_width: 4
-      keep_md: true
-  
----
+# Time Series Analysis of Non-Farm Payroll Data
+Sam Choi, Eric Xu  
+4/17/2018  
 
 \setlength{\footskip}{20pt}
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(DataComputing)
-library(astsa)
-#setwd("~/Dropbox/Berkeley/stat153/NFP-TSA/")
-```
+
 
 
 # Introduction
@@ -40,16 +26,7 @@ We aim to explore PAYNSA, PAYEMS a dataset of non farm payrolls without seasonal
 
 Throughout the 80 years represented in these datasets, various events have occurred that significantly changed the conditions of the economy. For this reason, we will limit our analysis to the years that followed the financial crisis of 2007/2008. By narrowing our scope to 2010-2018, we aim to provide a more telling analysis of the trends associated with the post-recession economic recovery. We first plot the not seasonally adjusted (NSA) data set.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
-nfp_nsa_ts <- ts(PAYNSA[2])
-nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
-
-par(mfrow=c(1,2))
-
-plot.ts(nfp_nsa_ts, main = "Nonfarm Payrolls 1939-2018", xlab = "Months (since January 1939)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-plot.ts(nfp_nsa_ts_2010_2018, main = "Nonfarm Payrolls 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 1. Time series plots of the full NSA data set (left) and the subset used for this analysis (right)
@@ -57,14 +34,7 @@ Figure 1. Time series plots of the full NSA data set (left) and the subset used 
 
 Next we take the first difference and study the distribution of differences using a histogram.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-NSA_diff <- diff(nfp_nsa_ts_2010_2018, lag = 1, differences = 1)
-
-par(mfrow=c(1,2))
-
-plot.ts(NSA_diff, main = "NSA Differences, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-hist(as.numeric(unlist(NSA_diff)), breaks=15,  main = "Histogram of NSA Differences", xlab = "Change in Payrolls", cex.main=0.8)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 2. Differenced NSA data and distribution of change in payrolls
@@ -79,20 +49,7 @@ Next we mean-center the differenced NSA time series (Figure A in Appendix). The 
 
 We will use the Box-Jenkins method to build an ARIMA model for the non-seasonally adjusted (NSA) NFP data. We begin by transforming the data set to achieve stationarity. We do so by first using a lagged difference with a period of 12 months, producing a time series that resembles a random walk. We then apply differencing again to achieve stationarity.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
-nfp_nsa_ts <- ts(PAYNSA[853:951,][2])
-
-par(mfrow=c(1,2))
-
-NSA_sdiff <- diff(nfp_nsa_ts, lag = 12, differences = 1)
-NSA_smean <- mean(NSA_sdiff)
-centered_NSA_sdiff <- NSA_sdiff - NSA_smean
-plot.ts(centered_NSA_sdiff, main = "Centered NSA Seasonal Diffs", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-
-NSA_sdiff2 <- diff(NSA_sdiff, lag = 1, differences = 1)
-plot.ts(NSA_sdiff2, main = "After Differencing Again", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 3. NSA data after lagged difference (left) and after lagged difference plus differencing again (right)
@@ -102,11 +59,7 @@ This now resembles white noise with fairly consistent variance, with slightly hi
 
 We now inspect the ACF and PACF plots of the transformed time series.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-par(mfrow=c(1,2))
-acf(NSA_sdiff2, main = "ACF", cex.main=0.4)
-pacf(NSA_sdiff2, main = "PACF", cex.main=0.4)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 4. ACF and PACF plots of the transformed time series
@@ -123,15 +76,7 @@ Analyzing the time series using spectral analysis allows us to identify the key 
 
 We begin by generating raw periodograms for both the differenced and detrended time series. These can be viewed in Figure A in the Appendix. As expected, both periodograms are bumpy with similar peaks. To reduce the variance of the periodogram and better identify significant peaks, we will smooth the periodogram using various parameters. We begin with a daniell kernel with m = 1.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
-nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
-differenced_NSA <- diff(nfp_nsa_ts_2010_2018)
-
-par(mfrow=c(1,2))
-mvspec(differenced_NSA, kernel("daniell", 1), log = "no", main = "Periodogram (Differenced)", cex.main=0.8, cex.lab=0.8, cex.axis=0.8)
-mvspec(nfp_nsa_ts_2010_2018, kernel("daniell", 1), log = "no", main = "Periodogram (Detrended)", cex.main=0.8, cex.lab=0.8, cex.axis=0.8)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 5. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 1)
@@ -141,19 +86,7 @@ This looks quite smooth already. Using m = 2 results in wider peaks shown in Fig
 
 To further reduce bias and narrow the peaks, we can apply smoothing with the modified Daniell kernel with m = 1. The periodogram is very smooth, so tapering has little effect. This suggests our data set has very clean and predictable cyclical variation, and we can now find the frequencies of the most significant peaks. We set the taper to 0.1 and overlay the local maxima to show where key frequencies might be.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-par(mfrow=c(1,2))
-
-pgram_diffed <- mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no", main = "Periodogram (Differenced)", cex.main=0.8, cex.lab=0.8, cex.axis=0.8)
-key_freq_ind <- c(1, which(diff(sign(diff(pgram_diffed$spec)))==-2) + 1)
-key_freq <- pgram_diffed$freq[key_freq_ind]
-abline(v=key_freq, lty=2)
-
-pgram_detrend <- mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no", main = "Periodogram (Detrended)", cex.main=0.8, cex.lab=0.8, cex.axis=0.8)
-key_freq_ind <- c(1, which(diff(sign(diff(pgram_detrend$spec)))==-2) + 1)
-key_freq <- pgram_detrend$freq[key_freq_ind]
-abline(v=key_freq, lty=2)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 6. Smoothed and tapered periodograms overlaid with local maxima (dashed lines)
@@ -169,21 +102,7 @@ The smoothed periodogram of the detrended data has two major peaks: one at a fre
 
 We can now compare our smoothed and tapered periodograms with the estimated spectral densities generated using parametric spectral estimation.
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-par(mfrow=c(1,2))
-
-mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no", main = "Periodogram (Differenced)", cex.main=0.8, cex.lab=0.8, cex.axis=0.8)
-pgram_ar <- spec.ar(differenced_NSA, plot=F)
-lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
-
-t <- 1:length(nfp_nsa_ts_2010_2018)
-fit <- lm(nfp_nsa_ts_2010_2018 ~ t)
-detrended_NSA <- fit$residuals
-
-mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no", main = "Periodogram (Detrended)", cex.main=0.8, cex.lab=0.8, cex.axis=0.8)
-pgram_ar <- spec.ar(detrended_NSA, plot=F)
-lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 7. Smoothed and tapered periodograms overlaid with parametric spectral estimator (dashed red)
@@ -196,37 +115,13 @@ The parametric spectral estimator has peaks at frequencies 0.08, 0.17, 0.25, 0.3
 
 Using data from January 2010 to March 2017, we aim to forecast nonfarm payrolls for the following 12 months (April 2017 to March 2018). We do this by partitioning our dataset into a training portion that will be used to fit our models, and a testing portion that will be used to measure the accuracy of our forecasts.  
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
-nfp_nsa_ts <- ts(PAYNSA[2])
-nfp_nsa_training_ts <- ts(PAYNSA[853:939,][2])
-nfp_nsa_testing_ts <- ts(PAYNSA[940:951,][2])
 
-mse <- function(ts1, ts2) {
-  sum_squares = 0
-  for (i in 1:length(ts1)) {
-    diff <- ts1[i] - ts2[i]
-    sum_squares = sum_squares + diff^2
-  }
-  sum_squares/length(ts1)
-}
-```
 
 ### ARIMA
 
 We proceed with a non-seasonal ARIMA model, as well as a SARIMA model to fit the general trend of the data, as well as the seasonal trends observed:
 
-```{r fig.align='center', fig.height = 3, echo=FALSE}
-nobs <- length(nfp_nsa_training_ts)
-fit <- arima(nfp_nsa_training_ts, order=c(0, 1, 0), xreg=1:nobs)
-n_pred <- length(nfp_nsa_testing_ts)
-forecast <- predict(fit, n_pred, newxreg=(nobs+1):(nobs+n_pred))
-
-par(mfrow=c(1, 2))
-
-ts.plot(nfp_nsa_training_ts, forecast$pred, col=c("black", "red"), ylab = "Total Payrolls", main = "ARIMA Model Forecast")
-sfit <- sarima.for(nfp_nsa_training_ts, n_pred, p=0, d=1, q=0, P=0, D=1, Q=0, S=12)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure 9. ARIMA model forecast (left) and SARIMA model forecast (right)
@@ -266,26 +161,13 @@ Multivariate time series analysis comparing payroll data with factors such as GD
 
 ## Figures
 
-```{r fig.align='center', fig.height = 2.7, echo=FALSE}
-NSA_mean <- mean(NSA_diff, na.rm = TRUE)
-centered_NSA_diff <- NSA_diff - NSA_mean
-plot.ts(centered_NSA_diff, main = "Mean-Centered NSA Differences, 2010-2018", xlab = "Months (since January 2010)", ylab = "Number of Payrolls", cex.main=0.8, cex.lab=0.5, cex.axis=0.3)
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure A. Mean-centered NSA time series
 \end{center}
 
-```{r fig.align='center', fig.height = 3, echo=FALSE}
-PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
-nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
-
-differenced_NSA <- diff(nfp_nsa_ts_2010_2018)
-
-par(mfrow=c(1,2))
-mvspec(differenced_NSA, detrend = FALSE, main = "Periodogram (Differenced)")
-mvspec(nfp_nsa_ts_2010_2018, main = "Periodogram (Detrended)")
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure B. Raw periodograms of differenced (left) and detrended (right) NSA data
@@ -293,21 +175,13 @@ Figure B. Raw periodograms of differenced (left) and detrended (right) NSA data
 
 The differenced time series produces a raw periodogram with a much lower baseline in the 0.0 to 0.1 frequency range and the detrended time series produces a raw periodogram with a lower baseline in the 0.26 to 0.28 frequency range. This means in the differenced time series, the peak at a frequency of about 0.08 is more significant, and in the detrended time series, the peaks at 0.25 and 0.33 are more significant. 
 
-```{r fig.align='center', fig.height = 3, echo=FALSE}
-par(mfrow=c(1,2))
-mvspec(differenced_NSA, kernel("daniell", 2), log = "no", main = "Periodogram (Differenced)")
-mvspec(nfp_nsa_ts_2010_2018, kernel("daniell", 2), log = "no", main = "Periodogram (Detrended)")
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure C. Smoothed periodograms of differenced and detrended time series using a Daniell kernel (m = 2)
 \end{center}
 
-```{r fig.align='center', fig.height = 3, echo=FALSE}
-par(mfrow=c(1,2))
-mvspec(differenced_NSA, kernel("modified.daniell", 1), log = "no", taper = 0.2, main = "Periodogram (Differenced)")
-mvspec(nfp_nsa_ts_2010_2018, kernel("modified.daniell", 1), log = "no", taper = 0.2, main = "Periodogram (Detrended)")
-```
+<img src="project-nfp-final-report_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
 
 \begin{center}
 Figure D. Smoothed, tapered periodograms of differenced and detrended time series using a modified Daniell kernel (m = 1)
@@ -318,7 +192,8 @@ Figure D. Smoothed, tapered periodograms of differenced and detrended time serie
 
 ### EDA
 
-```{r, eval=FALSE}
+
+```r
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
 nfp_nsa_ts <- ts(PAYNSA[2])
 plot.ts(nfp_nsa_ts, main = "Total Nonfarm Payrolls (Not Seasonally Adjusted)",
@@ -344,7 +219,8 @@ plot.ts(centered_NSA_diff, main = "Centered NSA Diffs, 2010-2018",
 
 ### ARIMA Modeling
 
-```{r, eval=FALSE}
+
+```r
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
 nfp_nsa_ts_2010_2018 <- ts(PAYNSA[853:951, ][2])
 plot.ts(nfp_nsa_ts_2010_2018, main = "Non Seasonally Adjusted NFP Data")
@@ -364,7 +240,8 @@ pacf(NSA_sdiff2, main = "PACF Plot of NSA Seasonal Diffs Differenced Again")
 
 ### Spectral Analysis
 
-```{r, eval=FALSE}
+
+```r
 mvspec(differenced_NSA, detrend = FALSE)
 mvspec(nfp_nsa_ts_2010_2018)
 
@@ -411,7 +288,8 @@ lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
 
 ### Forecasting
 
-```{r, eval=FALSE}
+
+```r
 PAYNSA <- read.csv(file = "PAYNSA.csv", header = TRUE, sep = ",")
 nfp_nsa_ts <- ts(PAYNSA[2])
 nfp_nsa_training_ts <- ts(PAYNSA[853:939,][2])
@@ -437,8 +315,6 @@ sfit <- sarima.for(nfp_nsa_training_ts, n_pred, p=0, d=1, q=0, P=0, D=1, Q=0, S=
 
 mse(forecast$pred, nfp_nsa_testing_ts)
 mse(sfit$pred, nfp_nsa_testing_ts)
-
-
 ```
 
 
