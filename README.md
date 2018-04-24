@@ -13,3 +13,5 @@ Nonfarm payroll time series analysis
 [Spectral Analysis](project-nfp-spectral.md): Spectral Analysis of NFP Data.  
 [Forecasting](project-nfp-forecasting.md): Forecasting of last 12 months of nonfarm payrolls.  
 
+### Results
+[Final Report](project-nfp-final-report.pdf): Comprehensive report of EDA, ARIMA/Spectral Analysis, and Forecasting.  
